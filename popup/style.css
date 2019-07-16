@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css?family=Karla');
+
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+
+.card-obj {
+    line-height: 1.5em;
+
+    color:blue;
+    border: 1px solid gray;
+
+    width: 32.33333%;
+    text-align: center;
+
+
+}
+
+h1{
+  font-family: 'Roboto', sans-serif;
+  text-align: center;
+
+}
+p{
+  margin: 80px;
+}
+
+article{
+}
+body{
+  font-family: 'Roboto', sans-serif;
+  margin: 100px;
+}
+
+.container > div {
+    display: inline-block;
+    display: -moz-inline-box;
+    *display: inline; /* For IE7 */
+    zoom: 1; /* Trigger hasLayout */
+    width: 32%.3333;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #000000;
+}
