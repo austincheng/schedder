@@ -15,13 +15,14 @@ import win32clipboard
 import json
 
 class Outlook:
-	def __init__(self, users, rooms, start, end, meeting_length):
+	def __init__(self, users, rooms, start, end, meeting_length, email):
 		self.users = users
 		self.rooms = rooms
 		self.start = start
 		self.end = end
 		self.meeting_length = meeting_length
 		self.all = users + rooms
+		self.email = email
 
 	def get_availability(self):
 		driver = webdriver.Chrome()
@@ -31,7 +32,9 @@ class Outlook:
 		driver.find_element_by_id('ms-signin-button').click()
 
 		WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "i0116")))
-		driver.find_element_by_id('i0116').send_keys('aucheng@cisco.com')
+		driver.find_element_by_id('i0116').send_keys(self.email)
+
+		# May need to do additional steps based on login
 
 		time.sleep(0.5)
 
@@ -105,10 +108,11 @@ class Outlook:
 		actions = ActionChains(driver)
 		actions.move_to_element(div)
 		actions.click(div)
-		actions.key_down(Keys.CONTROL)
+		# Copying does not work on Mac in Chrome
+		actions.key_down(Keys.CONTROL) # Keys.COMMAND on Mac
 		actions.send_keys("a")
 		actions.send_keys("c")
-		actions.key_up(Keys.CONTROL)
+		actions.key_up(Keys.CONTROL) # Keys.COMMAND on Mac
 		actions.perform()
 
 		win32clipboard.OpenClipboard()
@@ -127,7 +131,7 @@ class Outlook:
 		return userTimes, roomTimes
 
 	@staticmethod
-	def create_event(start, end, location, emails):
+	def create_event(start, end, location, emails, meeting_subject, meeting_body):
 		driver = webdriver.Chrome()
 		driver.get('https://developer.microsoft.com/en-us/graph/graph-explorer')
 
@@ -135,7 +139,9 @@ class Outlook:
 		driver.find_element_by_id('ms-signin-button').click()
 
 		WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "i0116")))
-		driver.find_element_by_id('i0116').send_keys('aucheng@cisco.com')
+		driver.find_element_by_id('i0116').send_keys(emails[0]) # Login credentials
+
+		# May need to do additional steps based on login
 
 		time.sleep(0.5)
 
@@ -176,7 +182,7 @@ class Outlook:
 		actions = ActionChains(driver)
 		actions.move_to_element(div)
 		actions.click(div)
-		actions.send_keys('{\"subject\": \"Hackathon Demo Meet\",\"body\": {\"contentType\": \"HTML\",\"content\": \"Let\'s sync up for the Schedder hackathon demo.\"},' + \
+		actions.send_keys('{\"subject\": \"' + meeting_subject + '\",\"body\": {\"contentType\": \"HTML\",\"content\": \"' + meeting_body + '\"},' + \
 								'\"start\": {' + \
 									'\"dateTime\": \"' + start + '\",' + \
 									'\"timeZone\": \"Pacific Standard Time\"' + \

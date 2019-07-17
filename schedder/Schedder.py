@@ -15,8 +15,12 @@ import datetime
 import time
 
 class Schedder:
-	def __init__(self, file):
+	def __init__(self, file, emails, meeting_length, meeting_subject, meeting_body):
 		self.file = file
+		self.emails = emails
+		self.meeting_length = meeting_length
+		self.meeting_subject = meeting_subject
+		self.meeting_body = meeting_body
 
 	def run(self):
 		sys.excepthook = cef.ExceptHook  # To shutdown all CEF processes on error
@@ -24,21 +28,18 @@ class Schedder:
 		browser = cef.CreateBrowserSync(url=self.file,
 		                      window_title="Schedder")	
 		bindings = cef.JavascriptBindings()
-		bindings.SetFunction("py_function", Schedder.py_function)
+		bindings.SetFunction("py_create_event", lambda date, time_str, location: Schedder.py_create_event(date, time_str, location, self.emails, self.meeting_length, self.meeting_subject, self.meeting_body))
 		browser.SetJavascriptBindings(bindings)
 		cef.MessageLoop()
 		del browser
 		cef.Shutdown()
 
 	@staticmethod
-	def py_function(date, time_str, location):
+	def py_create_event(date, time_str, location, emails, meeting_length, meeting_subject, meeting_body):
 		start = datetime.datetime.strptime(date + " " + time_str, '%Y-%m-%d %H:%M:%S')
-		end = start + datetime.timedelta(minutes=30)
+		end = start + datetime.timedelta(minutes=meeting_length)
 
 		start_string = str(start).replace(' ', 'T')[:19]
 		end_string = str(end).replace(' ', 'T')[:19]
 
-		email_file = open('emails.txt', 'r')
-		emails = [email[:-1] for email in email_file.readlines()]
-
-		Outlook.create_event(start_string, end_string, location, emails)
+		Outlook.create_event(start_string, end_string, location, emails, meeting_subject, meeting_body)

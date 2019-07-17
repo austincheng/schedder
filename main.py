@@ -1,20 +1,21 @@
 from recurrent import RecurringEvent
 import datetime
 import sys
+import os
 from outlook.Outlook import Outlook
 from schedder.Schedder import Schedder
 
-def json_time(date, time, room):
-	return "{{date: \"{}\", time: \"{}\", room: \"{}\"}}".format(date, time, room)
+# Changeable meeting parameters
+meeting_length = 30 # Can change based on length of meeting in minutes
+meeting_subject = "Hackathon Demo Meeting"
+meeting_body = "Let\'s sync up for the Schedder hackathon demo."
 
-meeting_length = 30
-# Bot Info
 message = sys.argv[1]
+# First email in list is the login credentials to Microsoft API, and therefore also the sender of the invite
+email = sys.argv[2]
 users = sys.argv[2:]
-with open('emails.txt', 'w+') as emails:
-	for user in users:
-		emails.write(user + '\n')
 
+# Can add additional rooms
 rooms = ['CONF_100242@cisco.com', 'CONF_70358@cisco.com']
 room_map = {'CONF_100242@cisco.com': 'SJC09-1-FURMAN',
 			'CONF_70358@cisco.com': 'SJC09-1-CHIMNEY ROCK'}
@@ -48,7 +49,7 @@ else:
 start_string = str(start).replace(' ', 'T')[:19]
 end_string = str(end).replace(' ', 'T')[:19]
 
-outlook_api = Outlook(users, rooms, start_string, end_string, meeting_length)
+outlook_api = Outlook(users, rooms, start_string, end_string, meeting_length, email)
 userTimes, roomTimes = outlook_api.get_availability()
 
 len_1 = len(roomTimes[0][1]) == 1
@@ -86,7 +87,7 @@ for i in range(len(available)):
 	if len(room_available[i]) == 0:
 		continue
 	else:
-		line += json_time(date, time, room_available[i][0])
+		line += "{{date: \"{}\", time: \"{}\", room: \"{}\"}}".format(date, time, room_available[i][0])
 	if i != len(available) - 1:
 		line += ", "
 	line += '\n'
@@ -94,5 +95,7 @@ for i in range(len(available)):
 dates_file.write(']')
 dates_file.close()
 
-schedder = Schedder("file:///C:/Users/aucheng/Desktop/hackathon/popup/index.html")
+local_path_to_folder = os.path.dirname(os.path.abspath(__file__))
+full_path_to_index = "file:///" + local_path_to_folder + "/popup/index.html" 
+schedder = Schedder(full_path_to_index, users, meeting_length, meeting_subject, meeting_body)
 schedder.run()

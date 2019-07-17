@@ -1,5 +1,4 @@
 function onload() {
-	console.log(dates)
 	showHTML(dates)
 }
 
@@ -8,7 +7,7 @@ function send(i) {
 	var time = dates[i].time
 	var room = dates[i].room
 
-	py_function(date, time, room)
+	py_create_event(date, time, room)
 	window.close()
 }
 
